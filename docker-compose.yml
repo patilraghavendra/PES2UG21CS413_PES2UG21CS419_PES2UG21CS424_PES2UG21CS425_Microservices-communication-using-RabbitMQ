@@ -1,0 +1,56 @@
+version: '3'
+services:
+  producer:
+    build: ./producer
+    ports:
+      - "8000:8000"  # Adjust port as needed
+    depends_on:
+      - rabbitmq
+    networks:
+      - inventory_network
+
+  consumer_one:
+    build: ./consumer_one
+    depends_on:
+      - rabbitmq
+    networks:
+      - inventory_network
+
+  consumer_two:
+    build: ./consumer_two
+    depends_on:
+      - rabbitmq
+    networks:
+      - inventory_network
+
+  consumer_three:
+    build: ./consumer_three
+    depends_on:
+      - rabbitmq
+    networks:
+      - inventory_network
+
+  consumer_four:
+    build: ./consumer_four
+    depends_on:
+      - rabbitmq
+    networks:
+      - inventory_network
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"  # RabbitMQ default port
+      - "15672:15672"  # RabbitMQ management UI port
+    networks:
+      - inventory_network
+
+  database:
+    build: ./database_service
+    ports:
+      - "27017:27017"  # MongoDB default port
+    networks:
+      - inventory_network
+
+networks:
+  inventory_network:
