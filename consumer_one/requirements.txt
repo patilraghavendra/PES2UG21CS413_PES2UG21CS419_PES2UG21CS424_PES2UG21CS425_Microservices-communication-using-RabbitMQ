@@ -1,2 +1,3 @@
 # Example requirements.txt file for consumer_one microservice
+pymongo
 pika

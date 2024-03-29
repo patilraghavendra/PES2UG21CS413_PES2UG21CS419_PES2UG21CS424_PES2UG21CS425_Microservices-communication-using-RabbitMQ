@@ -19,7 +19,9 @@ services:
   consumer_two:
     build: ./consumer_two
     depends_on:
-      - rabbitmq
+      - database
+    environment:
+      - MONGODB_HOST=host.docker.internal
     networks:
       - inventory_network
 
