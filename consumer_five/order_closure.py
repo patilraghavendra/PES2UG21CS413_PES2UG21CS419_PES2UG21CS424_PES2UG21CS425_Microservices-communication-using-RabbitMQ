@@ -14,18 +14,21 @@ RABBITMQ_PORT = 5672
 RABBITMQ_ITEM_QUEUE = "item_queue"
 
 
-def insert_into_mongodb(data):
+def delete_from_mongodb(item_id):
     try:
         # Connect to MongoDB
         client = MongoClient(f"mongodb://{MONGODB_HOST}:{MONGODB_PORT}/")
         db = client[MONGODB_DATABASE]
 
-        # Insert data into MongoDB collection
-        collection = db[MONGODB_COLLECTION]
-        collection.insert_one(data)
-        print("Data inserted into MongoDB successfully")
+        # Delete document from MongoDB collection
+        result = db[MONGODB_COLLECTION].delete_one({"product_id": item_id})
+
+        if result.deleted_count > 0:
+            print(f"Document deleted from MongoDB for product ID {item_id}")
+        else:
+            print(f"No document found in MongoDB for product ID {item_id}")
     except Exception as e:
-        print("Failed to insert data into MongoDB:", str(e))
+        print("Failed to delete document from MongoDB:", str(e))
 
 
 def consume_messages():
@@ -42,19 +45,23 @@ def consume_messages():
         # Define callback function to handle incoming messages
         def callback(ch, method, properties, body):
             message = json.loads(body.decode("utf-8"))
-            print("Received message:", message)
+            print("Received delete message:", message)
 
-            # Check if the message is for item creation
-            if "action" in message and message["action"] == "create_item":
-                # Insert the data into MongoDB
-                insert_into_mongodb(message["data"])
+            # Check if the message is for item deletion
+            if "action" in message and message["action"] == "delete_item":
+                # Extract item ID and delete from MongoDB
+                item_id = message.get("item_id")
+                if item_id:
+                    delete_from_mongodb(item_id)
+                else:
+                    print("No item ID provided in delete message")
 
         # Consume messages from the queue
         channel.basic_consume(
             queue=RABBITMQ_ITEM_QUEUE, on_message_callback=callback, auto_ack=True
         )
 
-        print("Waiting for item creation messages...")
+        print("Waiting for delete messages...")
         channel.start_consuming()
     except pika.exceptions.AMQPConnectionError as e:
         print(f"RabbitMQ connection error: {e}")

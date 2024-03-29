@@ -1,56 +1,74 @@
 version: '3'
+
 services:
   producer:
-    build: ./producer
+    build:
+      context: ./producer
     ports:
-      - "8000:8000"  # Adjust port as needed
+      - "8000:8000"
     depends_on:
-      - rabbitmq
+      - database
     networks:
       - inventory_network
 
   consumer_one:
-    build: ./consumer_one
+    build:
+      context: ./consumer_one
     depends_on:
       - rabbitmq
+      - database
     networks:
       - inventory_network
 
   consumer_two:
-    build: ./consumer_two
+    build:
+      context: ./consumer_two
     depends_on:
+      - rabbitmq
       - database
-    environment:
-      - MONGODB_HOST=host.docker.internal
     networks:
       - inventory_network
 
   consumer_three:
-    build: ./consumer_three
+    build:
+      context: ./consumer_three
     depends_on:
       - rabbitmq
+      - database
     networks:
       - inventory_network
 
   consumer_four:
-    build: ./consumer_four
+    build:
+      context: ./consumer_four
     depends_on:
       - rabbitmq
+      - database
+    networks:
+      - inventory_network
+      
+  consumer_five:
+    build:
+      context: ./consumer_five
+    depends_on:
+      - rabbitmq
+      - database
     networks:
       - inventory_network
 
   rabbitmq:
     image: rabbitmq:3-management
     ports:
-      - "5672:5672"  # RabbitMQ default port
-      - "15672:15672"  # RabbitMQ management UI port
+      - "5672:5672"
+      - "15672:15672"
     networks:
       - inventory_network
 
   database:
-    build: ./database_service
+    build:
+      context: ./database_service
     ports:
-      - "27017:27017"  # MongoDB default port
+      - "27017:27017"
     networks:
       - inventory_network
 
